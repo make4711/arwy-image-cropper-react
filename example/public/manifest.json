@@ -1,0 +1,8 @@
+{
+  "short_name": "arwy-image-cropper-react",
+  "name": "arwy-image-cropper-react",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
