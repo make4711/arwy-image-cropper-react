@@ -15,12 +15,13 @@ npm install --save arwy-image-cropper-react
 ```tsx
 import * as React from 'react'
 
-import MyComponent from 'arwy-image-cropper-react'
+import { ImageCropper}  from 'arwy-image-cropper-react'
 
 class Example extends React.Component {
+
   render () {
     return (
-      <MyComponent />
+      <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ w: 50, h: 50 }} preview />
     )
   }
 }

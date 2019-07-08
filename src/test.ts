@@ -1,7 +1,7 @@
-import ExampleComponent from './'
+import {ImageCropper} from './'
 
-describe('ExampleComponent', () => {
+describe('ImageCropper', () => {
   it('is truthy', () => {
-    expect(ExampleComponent).toBeTruthy()
+    expect(ImageCropper).toBeTruthy()
   })
 })
