@@ -287,7 +287,6 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
             this.canvasPainter.paintCanvas(false);
             this.drawPreview();
             this.canvasPainter.refreshPainting();
-            this.props.onChange(this.canvasPreview.toDataURL());
         })();
     }
     componentWillUnmount() {
@@ -301,6 +300,7 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
         window.removeEventListener('touchstart', this.touchPressedHandler);
         window.removeEventListener('touchend', this.touchReleasedHandler);
     }
+    
     private resizeHandler = (e: Event) => {
         if (e) {
             e.preventDefault();
@@ -381,7 +381,7 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
             let h = w;
             ctx.clearRect(0, 0, this.props.thumbSize.w, this.props.thumbSize.h);
             ctx.drawImage(image, p1.x, p1.y, w, h, 0, 0, this.props.thumbSize.w, this.props.thumbSize.h);
-
+            this.props.onChange(this.canvasPreview.toDataURL());
         })();
     }
 

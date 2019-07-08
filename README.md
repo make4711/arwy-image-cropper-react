@@ -51,4 +51,4 @@ class Example extends React.Component {
 
 ## License
 
-MIT © [mk](https://github.com/mk)
+MIT © [make4711](https://github.com/make4711)

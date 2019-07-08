@@ -1,10 +1,10 @@
 {
   "name": "arwy-image-cropper-react",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "author": "mk",
   "license": "MIT",
-  "repository": "mk/arwy-image-cropper-react",
+  "repository": "make4711/arwy-image-cropper-react",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",
