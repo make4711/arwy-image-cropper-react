@@ -33,7 +33,7 @@ export default class App extends Component {
     return (
       <Fragment>
         <div>
-          <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ w: 50, h: 50 }} preview />
+          <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ width: 50, height: 50 }} preview />
         </div>
         <img width="50" height="50" src={this.state.imageUrl} alt="" />
       </Fragment>
