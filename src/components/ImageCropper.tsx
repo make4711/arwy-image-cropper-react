@@ -224,23 +224,19 @@ class CanvasPainter {
     public static readonly DELTA: number = 20;
     public static readonly SCALE: number = .7;
 
-    //Drawable
-    private borderWithHole: BorderWithHole;
-    private imageBounds: ImageBounds;
-    private pickUpPoints: PickUpPoints;
-
     private imageCanvas: HTMLCanvasElement;
     private imageCtx: CanvasRenderingContext2D;
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
 
+    private drawables: Drawable[];
+    private pickUpPoints: PickUpPoints;
+
     private touchPoint: Point2D;
-    private _mousePos: Point;
+    private _mousePos: Point2D;
 
     private mode: number = 0;
-
-    public canvasSize: Size = { width: 1, height: 1 };
 
     private image: HTMLImageElement;
 
@@ -254,9 +250,15 @@ class CanvasPainter {
         this.ctx = this.canvas.getContext("2d");
         this.image = image;
 
-        this.pickUpPoints = new PickUpPoints(this.canvasSize, [new Point2D(), new Point2D(), new Point2D(), new Point2D()]);
-        this.borderWithHole = new BorderWithHole(this.canvasSize, this.pickUpPoints.points);
-        this.imageBounds = new ImageBounds(this.pickUpPoints.points);
+        let size:Size={width:1,height:1};
+        let points= [new Point2D(), new Point2D(), new Point2D(), new Point2D()];
+
+        this.pickUpPoints = new PickUpPoints(size,points);
+        this._mousePos = new Point2D();
+        let borderWithHole = new BorderWithHole(this.pickUpPoints.canvasSize, this.pickUpPoints.points);
+        let imageBounds = new ImageBounds(this.pickUpPoints.points,);
+
+        this.drawables = [borderWithHole, imageBounds, this.pickUpPoints,this._mousePos];
 
         this.resizeCanvas(this.canvas.width, this.canvas.height);
     }
@@ -264,13 +266,13 @@ class CanvasPainter {
     public resizeCanvas(w: number, h: number) {
         this.imageCanvas.width = this.canvas.width = w;
         this.imageCanvas.height = this.canvas.height = h;
-        this.canvasSize.width = w;
-        this.canvasSize.height = h;
+        this.pickUpPoints.canvasSize.width = w;
+        this.pickUpPoints.canvasSize.height = h;
 
         this.imageRect = this.pickUpPoints.calcImageBoundary(this.image.width, this.image.height);
 
         if (this.imageRect) {
-            this.imageCtx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+            this.imageCtx.clearRect(0, 0, this.pickUpPoints.canvasSize.width, this.pickUpPoints.canvasSize.height);
             this.imageCtx.strokeStyle = '#000000';
             this.imageCtx.lineWidth = 0.5;
             this.imageCtx.globalAlpha = 1.0;
@@ -293,7 +295,7 @@ class CanvasPainter {
         let deltaX = this._mousePos ? point.x - this._mousePos.x : 0;
         let deltaY = this._mousePos ? point.y - this._mousePos.y : 0;
 
-        this._mousePos = point;
+        this._mousePos.point = point;
 
         this.touchPoint = this.pickUpPoints.getTouchPoint(point);
         this.pickUpPoints.move(this.mode, point, deltaX, deltaY);
@@ -313,29 +315,15 @@ class CanvasPainter {
         return { x: p1.x, y: p1.y, w: p2.x - p1.x, h: p2.y - p1.y };
     }
 
-    private drawPoint = (x: number, y: number, color: string) => {
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 0.5;
-        this.ctx.globalAlpha = 1.0;
-        this.ctx.strokeRect(x - CanvasPainter.DELTA, y - CanvasPainter.DELTA, CanvasPainter.DELTA * 2, CanvasPainter.DELTA * 2);
-    }
-
     public paintCanvas = () => {
         if (this.canvas) {
-            this.ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+            this.ctx.clearRect(0, 0, this.pickUpPoints.canvasSize.width, this.pickUpPoints.canvasSize.height);
 
             this.ctx.save();
 
-            this.borderWithHole.draw(this.ctx);
-            this.imageBounds.draw(this.ctx);
-            this.pickUpPoints.draw(this.ctx);
-
-            if (this._mousePos) {
-                this.drawPoint(this._mousePos.x, this._mousePos.y, '#00ff00');
-            }
+            this.drawables.forEach(drawable => drawable.draw(this.ctx));
 
             if (this.touchPoint) {
-                //this.drawPoint(this.touchPoint.x, this.touchPoint.y, '#0000ff');
                 this.touchPoint.draw(this.ctx, '#0000ff');
             }
 
@@ -354,7 +342,7 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
     private canvasPreview: HTMLCanvasElement;
 
     private g_previewTimer: NodeJS.Timeout = null;
-    private g_count:number = 0;
+    private g_count: number = 0;
 
     componentDidMount() {
         window.addEventListener('resize', this.resizeHandler);
@@ -365,15 +353,13 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
 
         (async () => {
             let image: HTMLImageElement = await this.loadImage(this.props.src);
+            
             this.canvasPainter = new CanvasPainter(this.imageCanvas, this.canvas, image);
-
             this.resizeHandler(null);
 
             this.canvasPreview.width = this.props.thumbSize.width;
             this.canvasPreview.height = this.props.thumbSize.height;
-
             this.drawPreview();
-            this.canvasPainter.refreshPainting();
         })();
     }
 
@@ -407,39 +393,40 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
     }
 
     private moveHandler = (event: any) => {
-        let clientX = event.clientX || event.touches && event.touches[0] && event.touches[0].clientX;
-        let clientY = event.clientY || event.touches && event.touches[0] && event.touches[0].clientY;
-
-        let p = this.getMousePos({ clientX, clientY });
-        if (this.canvasPainter) {
-            this.canvasPainter.mousePos = p;
-
-            this.drawPreview();
-
-            this.canvasPainter.refreshPainting();
-        }
-    }
-
-    private pressedHandler = (event: any) => {
-        let clientX = event.clientX || event.touches && event.touches[0] && event.touches[0].clientX;
-        let clientY = event.clientY || event.touches && event.touches[0] && event.touches[0].clientY;
-        let p = this.getMousePos({ clientX, clientY });
-        if (this.canvasPainter) {
-            this.canvasPainter.mousePos = p;
-            this.canvasPainter.mouseStart = p;
-        }
-    }
-
-    private releasedHandler = () => {
-        if (this.canvasPainter) {
-            this.canvasPainter.mouseStart = null;
+        if (!this.canvasPainter) {
+            return;
         }
 
+        let p = this.getMousePos(event);
+        this.canvasPainter.mousePos = p;
         this.drawPreview();
         this.canvasPainter.refreshPainting();
     }
 
-    private getMousePos({ clientX, clientY }: { clientX: number, clientY: number }) {
+    private pressedHandler = (event: any) => {
+        if (!this.canvasPainter) {
+            return;
+        }
+
+        let p = this.getMousePos(event);
+        this.canvasPainter.mousePos = p;
+        this.canvasPainter.mouseStart = p;
+        this.canvasPainter.refreshPainting();
+    }
+
+    private releasedHandler = () => {
+        if (!this.canvasPainter) {
+            return;
+        }
+
+        this.canvasPainter.mouseStart = null;
+        this.canvasPainter.refreshPainting();
+    }
+
+    private getMousePos(event: any) {
+        let clientX = event.clientX || event.touches && event.touches[0] && event.touches[0].clientX;
+        let clientY = event.clientY || event.touches && event.touches[0] && event.touches[0].clientY;
+
         var rect = this.canvas.getBoundingClientRect();
         return {
             x: clientX - rect.left,
@@ -447,39 +434,44 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
         };
     }
 
-    
+    private refreshPreview = () => {
+        this.g_count = 0;
+        this.g_previewTimer = null;
+
+        let imageSrc: string = this.imageCanvas.toDataURL();
+
+        let ctx: CanvasRenderingContext2D = this.canvasPreview.getContext("2d");
+
+        (async () => {
+            let image: HTMLImageElement = await this.loadImage(imageSrc);
+
+            let r: Rect = this.canvasPainter.rect;
+
+            let aspectRatioWidth = r.w / this.props.thumbSize.width;
+            let aspectRatioHeight = r.h / this.props.thumbSize.height;
+
+            let ratio = Math.min(aspectRatioWidth, aspectRatioHeight);
+
+            let w = this.props.thumbSize.width * ratio;
+            let h = this.props.thumbSize.height * ratio;
+
+            ctx.clearRect(0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
+            ctx.drawImage(image, r.x, r.y, w, h, 0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
+            this.props.onChange(this.canvasPreview.toDataURL());
+        })();
+    };
+
     private drawPreview() {
-        
-        const refresh = () => {
-            this.g_count = 0;
-            this.g_previewTimer = null;
-            let imageSrc: string = this.imageCanvas.toDataURL();
-
-            let ctx: CanvasRenderingContext2D = this.canvasPreview.getContext("2d");
-
-            (async () => {
-                let image: HTMLImageElement = await this.loadImage(imageSrc);
-
-                let r: Rect = this.canvasPainter.rect;
-
-                let w = Math.min(r.w, r.h);
-                let h = w;
-
-                ctx.clearRect(0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
-                ctx.drawImage(image, r.x, r.y, w, h, 0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
-                this.props.onChange(this.canvasPreview.toDataURL());
-            })();
-        };
 
         if (this.g_previewTimer) {
             clearTimeout(this.g_previewTimer);
             this.g_previewTimer = null;
             this.g_count++;
         }
-        this.g_previewTimer = setTimeout(refresh, 100);
+        this.g_previewTimer = setTimeout(this.refreshPreview, 100);
 
         if (this.g_count > 7) {
-            refresh();
+            this.refreshPreview();
         }
     }
 
@@ -520,15 +512,10 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
         }
 
         return (
-            <div
-                ref={(ref) => this.container = ref}
-                style={containerStyle}>
-                <canvas ref={(ref) => this.imageCanvas = ref}
-                    style={canvasStyle} />
-                <canvas ref={(ref) => this.canvas = ref}
-                    style={canvasStyle} />
-                <canvas ref={(ref) => this.canvasPreview = ref}
-                    style={canvasPreviewStyle} />
+            <div ref={(ref) => this.container = ref} style={containerStyle}>
+                <canvas ref={(ref) => this.imageCanvas = ref} style={canvasStyle} />
+                <canvas ref={(ref) => this.canvas = ref} style={canvasStyle} />
+                <canvas ref={(ref) => this.canvasPreview = ref} style={canvasPreviewStyle} />
             </div>
         )
     }

@@ -25,9 +25,7 @@ export default class App extends Component {
       "DbtrwqWj42bv7RQhVhR/ttz1Xw9teWLaOPOh0P7f31ZqyhwNR779lRIBUOOI4/tFIoQubhR5sW0gLLGfIxHBuw9oPOstNE8EpSQbJENivYeVu7sNbPUgPHc9q9vd40F1Pp8eYgmjAORGLLfg6/kapIWkJtQobpfUjkbceVwchtEe2j/wt/FTMgi4PlJJ0PD2VkLNG17FWBsQdCCOR7CK0XTs6SfH2zWcgWUmwLa8PGgHiicGqMEYVJ8qi/HQ/sNVPGXJA5cjow56GiNTcE7hzRtGFx31wUONDvUW8rX3Dlyqlml8sBckW9o0YcxppS/IwSbhde2w91xT1kJNuO3kfKwI1qtoQ/It38GFJCyk+Hpw/aKBlw7ctPePfWvkxFckmwvwIIDDxAoGbpwuSLEcyBY+0GmhZOXEIPCg5YGU8K1kvTSeF/Zr9lBzYFh5QSDz/wDLTdCQ4w27r1HJbzX42ING5OI8fmReHIdlAyncAw5aGmMELWYvUBPixwOyb4jdQAQnau7xBpzHNFb5RJjlZ+ZeKBiBtgisDK5I+EnmTWEws2KNFiyY2kRf9uSM2dR+Ug6EUfN1sRYsmP0+E4yTDbNM5vK6/kW3wrQEKnrk0ef1iRcXzQR2hhI/EkQ27/bxoP8Atst9VPtpl0PBZi2Q623iy8rL3X43rRLhqQAFv3AXN/6taRNULJJ0eZvwm3heiY+hkW9TS+mv+VaYY47de8kn3LYip+i1uBA4ECyj/HspOUJFH0SEcvG+n30UnSolFwot28aZbLC2lhpcDd7b8KmEB+Kxblubj2af50kIEYAXkB/j+GrBh91u3lx8daNClPhvw1sNotXDU3FieYAJJv3mhCFGODyue4E/5VL0wOA0PK9/+mimC8bgD+MnQDwqGw/huw0Fx5V99NCoMZFzbW3HQc/fUfTHFSRb3e9quKsOFuF7L5jx7ajIVX4r7tdGNCFQ0bHv8NT+6vLSX2+bwuKkWk/CpI567RXm82tZeHw9/ChC0QsJGsdTyt++pLfebnvH+BXV1NC4bRIQB8QvfjciuA2udbKRceNdXUIXDaHJ1IbXnxry4DaXAb2cK6uoQvdVJuRtbhcXsf8AOom6kH8LGxtYWP7q6upIXnlQlr2Q8QQTr2+2pag34KeI0GvbpXV1JNLOqdNWe+TELyWHqKvF1HZf8QrP29N9y/CeDcCQP2iurqkrWLtVaTpfUIskLFkEDI4I9h5/E8mpgysvxaAaB/8AhXV1UMKrOTPRRZmGpGgsdyixqt9RZtRwBBuw8bV1dTUqIS4vqRxuPKfsqBjAPI966n211dQhQaC9/LuHuI7tKrbFX8Iv3qNb11dQhUTdNimQ3UHsa/mFJMr6UeUlsZ/Me0WU+NdXUckIWH6PztwLZcMS8wAzMB4aUyxPpPCjcvkPJmMuoUgRqD3r+KurqOrNNOlhijULEojUfhQXt4qansQr5hcDhre3dt4iurqElypckLqP4BcX+8VHYvxXWx5sS3ie0V1dQhe7CwuLsPcLctRY++olCpuQEPaBcknlcfurq6hC4oSPg0OgZiAPcLiuINrajnZBp+0V1dQhRK6WYBeV21P2/vrtkgOgZtdSNB7q6uoQuYNt1sAOIRbH/HsqG0X3KADexLi5Arq6mhUusZ7XOvw6DT7Kj6Tfw7eznbx4V1dQhf/Z";
 
     let handleOnChange = (imageUrl) => { 
-      console.log('image', imageUrl);
       this.setState({imageUrl});
-
      };
 
     return (
@@ -35,7 +33,7 @@ export default class App extends Component {
         <div>
           <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ width: 50, height: 50 }} preview />
         </div>
-        <img width="50" height="50" src={this.state.imageUrl} alt="" />
+        <img src={this.state.imageUrl} alt="" />
       </Fragment>
     )
   }
