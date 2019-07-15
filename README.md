@@ -43,7 +43,7 @@ class Example extends React.Component {
     };
 
     return (
-      <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ w: 50, h: 50 }} preview />
+      <ImageCropper onChange={handleOnChange} src={src} thumbSize={{ width: 50, height: 50 }} preview />
     )
   }
 }

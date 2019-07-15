@@ -336,7 +336,7 @@ class CanvasPainter {
 
             if (this.touchPoint) {
                 //this.drawPoint(this.touchPoint.x, this.touchPoint.y, '#0000ff');
-                this.touchPoint.draw(this.ctx,'#0000ff');
+                this.touchPoint.draw(this.ctx, '#0000ff');
             }
 
             this.ctx.restore();
@@ -352,6 +352,9 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
     private imageCanvas: HTMLCanvasElement;
     private canvas: HTMLCanvasElement;
     private canvasPreview: HTMLCanvasElement;
+
+    private g_previewTimer: NodeJS.Timeout = null;
+    private g_count:number = 0;
 
     componentDidMount() {
         window.addEventListener('resize', this.resizeHandler);
@@ -411,8 +414,7 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
         if (this.canvasPainter) {
             this.canvasPainter.mousePos = p;
 
-            //TBD performance issue
-            //this.drawPreview();
+            this.drawPreview();
 
             this.canvasPainter.refreshPainting();
         }
@@ -445,23 +447,40 @@ export default class ImageCropper extends React.Component<{ onChange: Function, 
         };
     }
 
+    
     private drawPreview() {
-        let imageSrc: string = this.imageCanvas.toDataURL();
+        
+        const refresh = () => {
+            this.g_count = 0;
+            this.g_previewTimer = null;
+            let imageSrc: string = this.imageCanvas.toDataURL();
 
-        let ctx: CanvasRenderingContext2D = this.canvasPreview.getContext("2d");
+            let ctx: CanvasRenderingContext2D = this.canvasPreview.getContext("2d");
 
-        (async () => {
-            let image: HTMLImageElement = await this.loadImage(imageSrc);
+            (async () => {
+                let image: HTMLImageElement = await this.loadImage(imageSrc);
 
-            let r: Rect = this.canvasPainter.rect;
+                let r: Rect = this.canvasPainter.rect;
 
-            let w = Math.min(r.w, r.h);
-            let h = w;
+                let w = Math.min(r.w, r.h);
+                let h = w;
 
-            ctx.clearRect(0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
-            ctx.drawImage(image, r.x, r.y, w, h, 0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
-            this.props.onChange(this.canvasPreview.toDataURL());
-        })();
+                ctx.clearRect(0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
+                ctx.drawImage(image, r.x, r.y, w, h, 0, 0, this.props.thumbSize.width, this.props.thumbSize.height);
+                this.props.onChange(this.canvasPreview.toDataURL());
+            })();
+        };
+
+        if (this.g_previewTimer) {
+            clearTimeout(this.g_previewTimer);
+            this.g_previewTimer = null;
+            this.g_count++;
+        }
+        this.g_previewTimer = setTimeout(refresh, 100);
+
+        if (this.g_count > 7) {
+            refresh();
+        }
     }
 
     render() {
